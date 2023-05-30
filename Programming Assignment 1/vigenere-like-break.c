@@ -4,6 +4,17 @@
 #define MAX_LENGTH 500
 #define MAX_CHAR 256
 
+int valid_char(unsigned char c) {
+    int valid = (c >= 'a' && c <= 'z') || 
+                (c >= 'A' && c <= 'Z') || 
+                (c == ' ') ||
+                (c == '.') ||
+                (c == ',') ||
+                (c == ';');
+
+    return valid;
+}
+
 int main() {
     unsigned char cipher_text[MAX_LENGTH];
     unsigned char plain_text[MAX_LENGTH];
@@ -29,7 +40,6 @@ int main() {
     int key_length_guess;
     float sum_of_freq;
     float max_sum_of_freq = 0.0;
-    float f_cipher_length = (float) cipher_length;
     float frequencies[MAX_CHAR];
     float chunk_size; 
     for(key_length_guess = 1; key_length_guess <= MAX_KEY_LENGTH; key_length_guess++) {
@@ -81,15 +91,13 @@ int main() {
             for (int j = 0; j < MAX_CHAR; j++) {
                 frequencies[j] = 0.0;
             }
-            all_valids = 1;
 
+            all_valids = 1;
             // Count the frequencies of each character in the uncipher text
             for(int j = i; j < cipher_length; j += key_length) {
                 frequencies[cipher_text[j] ^ ith_key_char]++;
 
-                if ((cipher_text[j] ^ ith_key_char) < 32 || (cipher_text[j] ^ ith_key_char) > 126) {
-                    all_valids = 0;
-                }
+                all_valids = all_valids && valid_char(cipher_text[j] ^ ith_key_char);
             }
 
             // Calculate the SUM of the (frequencies / 256) ** 2
@@ -115,9 +123,6 @@ int main() {
         printf("%02x ", key[i]);
     }
     printf("\n");
-
-    // I think there is a Bug, but ... 
-    key[1] = 0x1F;
 
     for(int i = 0; i < cipher_length; i++) {
         plain_text[i] = cipher_text[i] ^ key[i % key_length];
